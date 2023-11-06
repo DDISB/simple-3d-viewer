@@ -29,6 +29,7 @@ System::Void simple3dviewerproject::MainForm::button1_Click(System::Object^ send
 {    
     canvas->Clear(Color::White);
     canvas->DrawLine(blackSolidThinPen, 100, 100, 400, 400);
+
     pictureBox1->Image = bmp;
 
     return System::Void();
