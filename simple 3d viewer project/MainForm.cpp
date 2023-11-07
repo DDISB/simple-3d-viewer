@@ -11,10 +11,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     return 0;
 }
 
+
+//Глобальные переменные
 std::vector<Coord> Vertices;
 std::vector<std::vector<int>> Faces;
-
 unsigned int NumberOfVertices, NumberIfFaces, NumberOfEdges;
+
+//
+//Функции
+//
 
 System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ sender, System::EventArgs^ e)
 {
@@ -23,6 +28,10 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     */
     blackSolidThinPen = gcnew Pen(Color::Black);
     blackSolidThinPen->Width = 1;
+    greenSolidThinPen = gcnew Pen(Color::Green);
+    greenSolidThinPen->Width = 1;
+    rnadColorPen = gcnew Pen(Color::Green);
+    rnadColorPen->Width = 1;
 
     width = pictureBox1->Width;
     height = pictureBox1->Height;
@@ -36,7 +45,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("hand.off", ios_base::in);
+    file.open("handv2.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -78,6 +87,9 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     }
 
     file.close();
+
+    drawPolygons();
+    //drawEdging();
     
     return System::Void();
 }
@@ -101,11 +113,11 @@ Coord simple3dviewerproject::MainForm::changeCoordinates(const Coord& OriginalCo
 /// Рисует фигуру на основе векторов вершин и поверхностей
 /// </summary>
 /// <returns></returns>
-System::Void simple3dviewerproject::MainForm::drawFigure()
+System::Void simple3dviewerproject::MainForm::drawEdging()
 {
-    canvas->Clear(Color::White);
+    //canvas->Clear(Color::White);
 
-    std::vector<Coord> newVertices = Vertices;
+    std::vector<Coord> newVertices (NumberOfVertices);
 
     for (unsigned int i = 0; i < NumberOfVertices; i++)
     {
@@ -116,23 +128,39 @@ System::Void simple3dviewerproject::MainForm::drawFigure()
     int j;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        for (j = 1; j < Faces[i].size(); j++)
+        for (j = 0; j < Faces[i].size(); j++)
         {
-            x1 = static_cast<int>(newVertices[Faces[i][j - 1]].x);
-            y1 = static_cast<int>(newVertices[Faces[i][j - 1]].y);
-            x2 = static_cast<int>(newVertices[Faces[i][j]].x);
-            y2 = static_cast<int>(newVertices[Faces[i][j]].y);
+            x1 = static_cast<int>(newVertices[Faces[i][j]].x);
+            y1 = static_cast<int>(newVertices[Faces[i][j]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].y);
             canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
         }
-        x1 = static_cast<int>(newVertices[Faces[i][0]].x);
-        y1 = static_cast<int>(newVertices[Faces[i][0]].y);
-        x2 = static_cast<int>(newVertices[Faces[i][j - 1]].x);
-        y2 = static_cast<int>(newVertices[Faces[i][j - 1]].y);
-        canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
     }
 
     pictureBox1->Image = bmp;
 
+    return System::Void();
+}
+
+System::Void simple3dviewerproject::MainForm::drawPolygons()
+{
+    canvas->Clear(Color::White);
+
+    std::vector<Coord> newVertices (NumberOfVertices);
+
+    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    {
+        newVertices[i] = changeCoordinates(Vertices[i]);
+    }
+
+    for (unsigned int i = 0; i < NumberIfFaces; i++)
+    {
+        filledTriangle(newVertices[Faces[i][0]], newVertices[Faces[i][1]], newVertices[Faces[i][2]]);
+    }
+
+    //drawEdging();
+    pictureBox1->Image = bmp;
     return System::Void();
 }
 
@@ -163,13 +191,74 @@ void simple3dviewerproject::MainForm::scalingCoordinates(std::vector<Coord>& vec
     return System::Void();
 }
 
-System::Void simple3dviewerproject::MainForm::button1_Click(System::Object^ sender, System::EventArgs^ e)
+void simple3dviewerproject::MainForm::rotateY(std::vector<Coord>& vec, double a)
 {
-    offsetCoordinates(Vertices, -0.1, 0, 0);
+    a = a * 3.14 / 180;
 
-    drawFigure();    
+    Matrix mt(3, 3);
+    mt(0, 0) = cos(-a);
+    mt(0, 2) = -sin(-a);
+    mt(1, 1) = 1;
+    mt(2, 0) = sin(-a);
+    mt(2, 2) = cos(-a);
 
-    return System::Void();
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult(vec[i]);
+    }    
+}
+
+void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3)
+{
+    if (c1.y == c2.y || c2.y == c3.y || c1.y == c3.y)
+        return;
+    
+
+    rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
+
+    if (c2.y > c3.y)
+    {
+        std::swap(c3.y, c2.y);
+        std::swap(c3.x, c2.x);
+    }
+    if (c1.y > c2.y)
+    {
+        std::swap(c2.y, c1.y);
+        std::swap(c2.x, c1.x);
+    }
+    if (c2.y > c3.y)
+    {
+        std::swap(c3.y, c2.y);
+        std::swap(c3.x, c2.x);
+    }
+
+    double dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
+    double dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+
+    double lx, rx;
+    lx = c1.x;
+    rx = c1.x;
+
+    for (int i = c1.y; i <= c2.y; i++)
+    {
+        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        lx += dx1;
+        rx += dx2;
+    }
+
+    dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
+    dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
+    lx = c3.x;
+    rx = c3.x;
+
+    for (int i = c3.y; i > c2.y; i--)
+    {
+        lx += dx1;
+        rx += dx2;
+        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+    }
+
+    pictureBox1->Image = bmp;
 }
 
 System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e)
@@ -178,34 +267,34 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
     {
     case 's':
         offsetCoordinates(Vertices, 0, 0.1, 0);
-        drawFigure();
+        drawPolygons();
         break;
     case 'w':
         offsetCoordinates(Vertices, 0, -0.1, 0);
-        drawFigure();
+        drawPolygons();
         break;
     case 'd':
         offsetCoordinates(Vertices, 0.1, 0, 0);
-        drawFigure();
+        drawPolygons();
         break;
     case 'a':
         offsetCoordinates(Vertices, -0.1, 0, 0);
-        drawFigure();
+        drawPolygons();
         break;
     case 'q':
         scalingCoordinates(Vertices, 0.9);
-        drawFigure();
+        drawPolygons();
         break;
     case 'e':
         scalingCoordinates(Vertices, 1.1);
-        drawFigure();
+        drawPolygons();
         break;
     case 'z':
         timer1->Enabled ? timer1->Enabled = false : timer1->Enabled = true;
         break;
     case '[':
         rotateY(Vertices, 10);
-        drawFigure();
+        drawPolygons();
         break;
     default:
         e->Handled;
@@ -217,22 +306,8 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
 
 System::Void simple3dviewerproject::MainForm::timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 {
-    /*offsetCoordinates*/(Vertices, 0.01, 0, 0);
+    //offsetCoordinates(Vertices, 0.01, 0, 0);
     rotateY(Vertices, 5);
-    drawFigure();
+    drawPolygons();
     return System::Void();
-}
-
-void simple3dviewerproject::MainForm::rotateY(std::vector<Coord>& vec, double a)
-{
-    a = a * 3.14 / 180;
-    double x,z;
-    for (unsigned int i = 0; i < vec.size(); i++)
-    {
-        x = vec[i].x;
-        z = vec[i].z;
-        vec[i].x = x * cos(a) + z * sin(a);
-        vec[i].z = -x * sin(a) + z * cos(a);
-    }
-    
 }
