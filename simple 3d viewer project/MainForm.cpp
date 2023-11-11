@@ -1,6 +1,4 @@
 #include "MainForm.h"
-#include <Windows.h>
-
 
 using namespace simple3dviewerproject;
 
@@ -16,6 +14,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 std::vector<Coord> Vertices;
 std::vector<std::vector<int>> Faces;
 unsigned int NumberOfVertices, NumberIfFaces, NumberOfEdges;
+
+
+
 
 //
 //Функции
@@ -381,7 +382,6 @@ void simple3dviewerproject::MainForm::singlePointProjection(std::vector<Coord> v
     mt(2, 3) = 1 / d;
     mt(3, 3) = 1;
 
-
     for (unsigned int i = 0; i < vec.size(); i++)
     {
         vec[i] = mt.mult4x(vec[i]);
@@ -423,6 +423,9 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
     case '/':
         timer1->Enabled ? timer1->Enabled = false : timer1->Enabled = true;
         break;
+    case '.':
+        timer2->Enabled ? timer2->Enabled = false : timer2->Enabled = true;
+        break;
     case '1':
         rotateY(Vertices, 10);
         drawEdging();
@@ -446,7 +449,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
         trimetry(Vertices);
         break;
     case 'o':
-        singlePointProjection(Vertices, -1);
+        singlePointProjection(Vertices, 3);
         break;
     default:
         e->Handled;
@@ -458,7 +461,13 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
 
 System::Void simple3dviewerproject::MainForm::timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 {
-    //offsetCoordinates(Vertices, 0.01, 0, 0);
+    rotateY(Vertices, 5);
+    drawPolygons();
+    return System::Void();
+}
+
+System::Void simple3dviewerproject::MainForm::timer2_Tick(System::Object^ sender, System::EventArgs^ e)
+{
     rotateY(Vertices, 5);
     singlePointProjection(Vertices, 3);
     return System::Void();

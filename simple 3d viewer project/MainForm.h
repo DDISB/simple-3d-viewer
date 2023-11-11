@@ -1,9 +1,10 @@
 #pragma once
 
-#include "coord.h"
-#include "MainForm.h"
+#include <Windows.h>
 #include <fstream>
 #include <vector>
+#include "coord.h"
+#include "MainForm.h"
 #include "Matrix.h"
 
 namespace simple3dviewerproject {
@@ -44,6 +45,7 @@ namespace simple3dviewerproject {
 	private: System::Windows::Forms::PictureBox^ pictureBox1;
 
 	private: System::Windows::Forms::Timer^ timer1;
+	private: System::Windows::Forms::Timer^ timer2;
 	private: System::ComponentModel::IContainer^ components;
 	protected:
 
@@ -65,6 +67,7 @@ namespace simple3dviewerproject {
 			this->components = (gcnew System::ComponentModel::Container());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
+			this->timer2 = (gcnew System::Windows::Forms::Timer(this->components));
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -83,6 +86,11 @@ namespace simple3dviewerproject {
 			// 
 			this->timer1->Interval = 10;
 			this->timer1->Tick += gcnew System::EventHandler(this, &MainForm::timer1_Tick);
+			// 
+			// timer2
+			// 
+			this->timer2->Interval = 10;
+			this->timer2->Tick += gcnew System::EventHandler(this, &MainForm::timer2_Tick);
 			// 
 			// MainForm
 			// 
@@ -129,5 +137,6 @@ namespace simple3dviewerproject {
 	private: void dimetry(std::vector<Coord> vec);
 	private: void trimetry(std::vector<Coord> vec);
 	private: void singlePointProjection(std::vector<Coord> vec, const double& d);
+	private: System::Void timer2_Tick(System::Object^ sender, System::EventArgs^ e);
 };
 }

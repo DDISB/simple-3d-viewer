@@ -11,8 +11,7 @@ Matrix::Matrix(size_t sR, size_t sC)
 		{
 			elem[i][j] = 0;
 		}
-	}
-	
+	}	
 }
 
 Matrix::~Matrix()
