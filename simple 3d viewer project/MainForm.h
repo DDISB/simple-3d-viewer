@@ -78,7 +78,7 @@ namespace simple3dviewerproject {
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
 			this->pictureBox1->Margin = System::Windows::Forms::Padding(2);
 			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(972, 421);
+			this->pictureBox1->Size = System::Drawing::Size(370, 248);
 			this->pictureBox1->TabIndex = 0;
 			this->pictureBox1->TabStop = false;
 			// 
@@ -96,7 +96,7 @@ namespace simple3dviewerproject {
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(972, 421);
+			this->ClientSize = System::Drawing::Size(370, 248);
 			this->Controls->Add(this->pictureBox1);
 			this->KeyPreview = true;
 			this->Margin = System::Windows::Forms::Padding(2);

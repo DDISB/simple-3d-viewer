@@ -1,14 +1,17 @@
 #include "MainForm.h"
 
-using namespace simple3dviewerproject;
+using namespace System;
+using namespace System::Windows::Forms;
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-    Application::EnableVisualStyles();
+[STAThreadAttribute]
+int main(array<String^>^ args)
+{
     Application::SetCompatibleTextRenderingDefault(false);
-    Application::Run(gcnew MainForm);
-    return 0;
+    Application::EnableVisualStyles();
+    simple3dviewerproject::MainForm form;
+    Application::Run(% form);
+    return 0; 
 }
-
 
 //Глобальные переменные
 std::vector<Coord> Vertices;
@@ -84,7 +87,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     }
     else
     {
-        throw ;
+        MessageBox::Show("File error", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
     }
 
     file.close();
