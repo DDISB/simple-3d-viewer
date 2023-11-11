@@ -22,7 +22,7 @@ Matrix::~Matrix()
 	delete[] elem;
 }
 
-Coord Matrix::mult(Coord coord)
+Coord Matrix::mult3x(Coord coord)
 {
 	double x = coord.x;
 	double y = coord.y;
@@ -31,6 +31,20 @@ Coord Matrix::mult(Coord coord)
 	coord.x = x * elem[0][0] + y * elem[1][0] + z * elem[2][0];
 	coord.y = x * elem[0][1] + y * elem[1][1] + z * elem[2][1];
 	coord.z = x * elem[0][2] + y * elem[1][2] + z * elem[2][2];
+
+	return coord;
+}
+
+Coord Matrix::mult4x(Coord coord)
+{
+	double x = coord.x;
+	double y = coord.y;
+	double z = coord.z;
+
+	coord.x = x * elem[0][0] + y * elem[1][0] + z * elem[2][0] + elem[3][0];
+	coord.y = x * elem[0][1] + y * elem[1][1] + z * elem[2][1] + elem[3][1];
+	coord.z = x * elem[0][2] + y * elem[1][2] + z * elem[2][2] + elem[3][2];
+	coord.d = x * elem[0][3] + y * elem[1][3] + z * elem[2][3] + elem[3][3];
 
 	return coord;
 }

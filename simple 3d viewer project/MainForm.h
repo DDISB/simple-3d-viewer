@@ -116,11 +116,18 @@ namespace simple3dviewerproject {
 	private: System::Void MainForm_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e);
 	private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void drawEdging();
+	private: System::Void drawEdging(std::vector<Coord>& vec);
 	private: System::Void drawPolygons();
 	private: Coord changeCoordinates(const Coord& OriginalCoord);
 	private: void offsetCoordinates(std::vector<Coord>& vec, const double& x, const double& y, const double& z);
-	private: void scalingCoordinates(std::vector<Coord>&  vec, const double& dx);
+	private: void scalingCoordinates(std::vector<Coord>& vec, const double& dx);
 	private: void rotateY(std::vector<Coord>& vec, double a);
 	private: void filledTriangle(Coord c1, Coord c2, Coord c3);
+	private: void viewFromAbove(std::vector<Coord> vec);
+	private: void sideView(std::vector<Coord> vec);
+	private: void isometry(std::vector<Coord> vec);
+	private: void dimetry(std::vector<Coord> vec);
+	private: void trimetry(std::vector<Coord> vec);
+	private: void singlePointProjection(std::vector<Coord> vec, const double& d);
 };
 }

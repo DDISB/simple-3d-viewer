@@ -2,5 +2,5 @@
 
 struct Coord
 {
-	double x, y, z;
+	double x, y, z, d;
 };

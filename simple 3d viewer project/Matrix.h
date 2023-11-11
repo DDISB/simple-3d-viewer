@@ -6,7 +6,8 @@ class Matrix
 public:
 	Matrix(size_t sR, size_t sC);
 	~Matrix();
-	Coord mult(Coord coord);
+	Coord mult3x(Coord coord);
+	Coord mult4x(Coord coord);
 	double& operator () (unsigned int x, unsigned int y) { return elem[x][y]; }
 
 private:

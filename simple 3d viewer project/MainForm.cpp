@@ -87,9 +87,6 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     }
 
     file.close();
-
-    drawPolygons();
-    //drawEdging();
     
     return System::Void();
 }
@@ -115,7 +112,7 @@ Coord simple3dviewerproject::MainForm::changeCoordinates(const Coord& OriginalCo
 /// <returns></returns>
 System::Void simple3dviewerproject::MainForm::drawEdging()
 {
-    //canvas->Clear(Color::White);
+    canvas->Clear(Color::White);
 
     std::vector<Coord> newVertices (NumberOfVertices);
 
@@ -141,6 +138,89 @@ System::Void simple3dviewerproject::MainForm::drawEdging()
     pictureBox1->Image = bmp;
 
     return System::Void();
+}
+
+System::Void simple3dviewerproject::MainForm::drawEdging(std::vector<Coord>& vec)
+{
+    canvas->Clear(Color::White);
+
+    std::vector<Coord> newVertices(NumberOfVertices);
+
+    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    {
+        newVertices[i] = changeCoordinates(vec[i]);
+    }
+
+    int x1, x2, y1, y2;
+    int j;
+    for (unsigned int i = 0; i < NumberIfFaces; i++)
+    {
+        for (j = 0; j < Faces[i].size(); j++)
+        {
+            x1 = static_cast<int>(newVertices[Faces[i][j]].x);
+            y1 = static_cast<int>(newVertices[Faces[i][j]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].y);
+            canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
+        }
+    }
+
+    pictureBox1->Image = bmp;
+
+    return System::Void();
+}
+
+void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3)
+{
+    if (c1.y == c2.y || c2.y == c3.y || c1.y == c3.y)
+        return;
+    
+
+    rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
+
+    if (c2.y > c3.y)
+    {
+        std::swap(c3.y, c2.y);
+        std::swap(c3.x, c2.x);
+    }
+    if (c1.y > c2.y)
+    {
+        std::swap(c2.y, c1.y);
+        std::swap(c2.x, c1.x);
+    }
+    if (c2.y > c3.y)
+    {
+        std::swap(c3.y, c2.y);
+        std::swap(c3.x, c2.x);
+    }
+
+    double dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
+    double dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+
+    double lx, rx;
+    lx = c1.x;
+    rx = c1.x;
+
+    for (int i = c1.y; i <= c2.y; i++)
+    {
+        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        lx += dx1;
+        rx += dx2;
+    }
+
+    dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
+    dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
+    lx = c3.x;
+    rx = c3.x;
+
+    for (int i = c3.y; i > c2.y; i--)
+    {
+        lx += dx1;
+        rx += dx2;
+        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+    }
+
+    pictureBox1->Image = bmp;
 }
 
 System::Void simple3dviewerproject::MainForm::drawPolygons()
@@ -204,61 +284,112 @@ void simple3dviewerproject::MainForm::rotateY(std::vector<Coord>& vec, double a)
 
     for (unsigned int i = 0; i < vec.size(); i++)
     {
-        vec[i] = mt.mult(vec[i]);
+        vec[i] = mt.mult3x(vec[i]);
     }    
 }
 
-void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3)
+void simple3dviewerproject::MainForm::viewFromAbove(std::vector<Coord> vec)
 {
-    if (c1.y == c2.y || c2.y == c3.y || c1.y == c3.y)
-        return;
-    
-
-    rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
-
-    if (c2.y > c3.y)
+    for (unsigned int i = 0; i < vec.size(); i++)
     {
-        std::swap(c3.y, c2.y);
-        std::swap(c3.x, c2.x);
-    }
-    if (c1.y > c2.y)
-    {
-        std::swap(c2.y, c1.y);
-        std::swap(c2.x, c1.x);
-    }
-    if (c2.y > c3.y)
-    {
-        std::swap(c3.y, c2.y);
-        std::swap(c3.x, c2.x);
+        vec[i].y = vec[i].z;
     }
 
-    double dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
-    double dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+    drawEdging(vec);
+}
 
-    double lx, rx;
-    lx = c1.x;
-    rx = c1.x;
-
-    for (int i = c1.y; i <= c2.y; i++)
+void simple3dviewerproject::MainForm::sideView(std::vector<Coord> vec)
+{
+    for (unsigned int i = 0; i < vec.size(); i++)
     {
-        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
-        lx += dx1;
-        rx += dx2;
+        vec[i].x = vec[i].z;
     }
 
-    dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
-    dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
-    lx = c3.x;
-    rx = c3.x;
+    drawEdging(vec);
+}
 
-    for (int i = c3.y; i > c2.y; i--)
+void simple3dviewerproject::MainForm::isometry(std::vector<Coord> vec)
+{
+    double p = 45 * 3.14 / 180;
+    double f = 35.264 * 3.14 / 180;
+
+    Matrix mt(4, 4);
+
+    mt(0, 0) = cos(p);
+    mt(0, 1) = sin(f) * sin(p);
+    mt(1, 1) = cos(f);
+    mt(2, 0) = sin(p);
+    mt(2, 1) = sin(f) * cos(p);
+    mt(3, 3) = 1;
+
+    for (unsigned int i = 0; i < vec.size(); i++)
     {
-        lx += dx1;
-        rx += dx2;
-        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        vec[i] = mt.mult4x(vec[i]);
     }
 
-    pictureBox1->Image = bmp;
+    drawEdging(vec);
+}
+
+void simple3dviewerproject::MainForm::dimetry(std::vector<Coord> vec)
+{
+    double p = 22.208 * 3.14 / 180;
+    double f = 20.705 * 3.14 / 180;
+    Matrix mt(4, 4);
+
+    mt(0, 0) = cos(p);
+    mt(0, 1) = sin(f) * sin(p);
+    mt(1, 1) = cos(f);
+    mt(2, 0) = sin(p);
+    mt(2, 1) = sin(f) * cos(p);
+    mt(3, 3) = 1;
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult4x(vec[i]);
+    }
+
+    drawEdging(vec);
+}
+
+void simple3dviewerproject::MainForm::trimetry(std::vector<Coord> vec)
+{
+    double p = 40 * 3.14 / 180;
+    double f = 55 * 3.14 / 180;
+    Matrix mt(4, 4);
+
+    mt(0, 0) = cos(p);
+    mt(0, 1) = sin(f) * sin(p);
+    mt(1, 1) = cos(f);
+    mt(2, 0) = sin(p);
+    mt(2, 1) = sin(f) * cos(p);
+    mt(3, 3) = 1;
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult4x(vec[i]);
+    }
+
+    drawEdging(vec);
+}
+
+void simple3dviewerproject::MainForm::singlePointProjection(std::vector<Coord> vec, const double& d)
+{
+    Matrix mt(4, 4);
+
+    mt(0, 0) = 1;
+    mt(1, 1) = 1;
+    mt(2, 3) = 1 / d;
+    mt(3, 3) = 1;
+
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult4x(vec[i]);
+        vec[i].x = vec[i].x / vec[i].d;
+        vec[i].y = vec[i].y / vec[i].d;
+    }
+
+    drawEdging(vec);
 }
 
 System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e)
@@ -267,40 +398,61 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
     {
     case 's':
         offsetCoordinates(Vertices, 0, 0.1, 0);
-        drawPolygons();
+        drawEdging();
         break;
     case 'w':
         offsetCoordinates(Vertices, 0, -0.1, 0);
-        drawPolygons();
+        drawEdging();
         break;
     case 'd':
         offsetCoordinates(Vertices, 0.1, 0, 0);
-        drawPolygons();
+        drawEdging();
         break;
     case 'a':
         offsetCoordinates(Vertices, -0.1, 0, 0);
-        drawPolygons();
+        drawEdging();
         break;
     case 'q':
         scalingCoordinates(Vertices, 0.9);
-        drawPolygons();
+        drawEdging();
         break;
     case 'e':
         scalingCoordinates(Vertices, 1.1);
-        drawPolygons();
+        drawEdging();
         break;
-    case 'z':
+    case '/':
         timer1->Enabled ? timer1->Enabled = false : timer1->Enabled = true;
         break;
-    case '[':
+    case '1':
         rotateY(Vertices, 10);
-        drawPolygons();
+        drawEdging();
+        break;
+    case 'z':
+        drawEdging();
+        break;
+    case 'x':
+        viewFromAbove(Vertices);
+        break;
+    case 'c':
+        sideView(Vertices);
+        break;
+    case ']':
+        isometry(Vertices);
+        break;
+    case '[':
+        dimetry(Vertices);
+        break;
+    case 'p':
+        trimetry(Vertices);
+        break;
+    case 'o':
+        singlePointProjection(Vertices, -1);
         break;
     default:
         e->Handled;
         break;
     }
-
+    
     return System::Void();
 }
 
@@ -308,6 +460,6 @@ System::Void simple3dviewerproject::MainForm::timer1_Tick(System::Object^ sender
 {
     //offsetCoordinates(Vertices, 0.01, 0, 0);
     rotateY(Vertices, 5);
-    drawPolygons();
+    singlePointProjection(Vertices, 3);
     return System::Void();
 }
