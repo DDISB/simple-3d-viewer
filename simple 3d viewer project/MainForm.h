@@ -76,9 +76,8 @@ namespace simple3dviewerproject {
 			this->pictureBox1->BackColor = System::Drawing::Color::White;
 			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
-			this->pictureBox1->Margin = System::Windows::Forms::Padding(2);
 			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(370, 248);
+			this->pictureBox1->Size = System::Drawing::Size(406, 284);
 			this->pictureBox1->TabIndex = 0;
 			this->pictureBox1->TabStop = false;
 			// 
@@ -94,12 +93,11 @@ namespace simple3dviewerproject {
 			// 
 			// MainForm
 			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(370, 248);
+			this->ClientSize = System::Drawing::Size(406, 284);
 			this->Controls->Add(this->pictureBox1);
 			this->KeyPreview = true;
-			this->Margin = System::Windows::Forms::Padding(2);
 			this->Name = L"MainForm";
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
 			this->Text = L"MainForm";
@@ -119,17 +117,20 @@ namespace simple3dviewerproject {
 		Pen^ rnadColorPen;
 		//Color backgroundColor, color;
 		int width, height, halfWidth, halfHeight;
+		Color color;
 
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void MainForm_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e);
 	private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void drawEdging();
 	private: System::Void drawEdging(std::vector<Coord>& vec);
-	private: System::Void drawPolygons();
+	private: System::Void drawPolygons(std::vector<Coord> Vertices);
 	private: Coord changeCoordinates(const Coord& OriginalCoord);
 	private: void offsetCoordinates(std::vector<Coord>& vec, const double& x, const double& y, const double& z);
 	private: void scalingCoordinates(std::vector<Coord>& vec, const double& dx);
 	private: void rotateY(std::vector<Coord>& vec, double a);
+	private: void rotateX(std::vector<Coord>& vec, double a);
+	private: void rotateZ(std::vector<Coord>& vec, double a);
 	private: void filledTriangle(Coord c1, Coord c2, Coord c3);
 	private: void viewFromAbove(std::vector<Coord> vec);
 	private: void sideView(std::vector<Coord> vec);
@@ -138,5 +139,5 @@ namespace simple3dviewerproject {
 	private: void trimetry(std::vector<Coord> vec);
 	private: void singlePointProjection(std::vector<Coord> vec, const double& d);
 	private: System::Void timer2_Tick(System::Object^ sender, System::EventArgs^ e);
-};
+	};
 }

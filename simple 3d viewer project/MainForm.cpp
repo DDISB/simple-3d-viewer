@@ -49,13 +49,14 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("handv2.off", ios_base::in);
+    file.open("anime_charcter.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
     {
         //Первая строка OFF
         string s;
+        double x;
         file >> s;
 
         //Вторая строка: кол-во вершин, поверхностей, граней
@@ -74,15 +75,17 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
         Faces.resize(NumberIfFaces);
 
         //Записываем информацию о гранях в вектор
-        int rowSize;
+        int colSize;
         for (unsigned int i = 0; i < NumberIfFaces; i++)
         {
-            file >> rowSize;
-            Faces[i].resize(rowSize);
-            for (int j = 0; j < rowSize; j++)
+            file >> colSize;
+            colSize += 3;
+            Faces[i].resize(colSize);
+            for (int j = 0; j < colSize; j++)
             {
                 file >> Faces[i][j];
             }
+            //file >> x >> x >> x;
         }
     }
     else
@@ -103,8 +106,8 @@ Coord simple3dviewerproject::MainForm::changeCoordinates(const Coord& OriginalCo
 {
     Coord coord;
 
-    coord.x = round(halfHeight * OriginalCoord.x) + halfWidth;
-    coord.y = round(halfHeight * OriginalCoord.y) + halfHeight;
+    coord.x = -round(halfHeight * OriginalCoord.x) + halfWidth;
+    coord.y = -round(halfHeight * OriginalCoord.y) + halfHeight;
     coord.z = round(100 * OriginalCoord.z);
 
     return coord;
@@ -129,12 +132,12 @@ System::Void simple3dviewerproject::MainForm::drawEdging()
     int j;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        for (j = 0; j < Faces[i].size(); j++)
+        for (j = 0; j < Faces[i].size() - 3; j++)
         {
             x1 = static_cast<int>(newVertices[Faces[i][j]].x);
             y1 = static_cast<int>(newVertices[Faces[i][j]].y);
-            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].x);
-            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].y);
             canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
         }
     }
@@ -159,12 +162,12 @@ System::Void simple3dviewerproject::MainForm::drawEdging(std::vector<Coord>& vec
     int j;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        for (j = 0; j < Faces[i].size(); j++)
+        for (j = 0; j < Faces[i].size()-3; j++)
         {
             x1 = static_cast<int>(newVertices[Faces[i][j]].x);
             y1 = static_cast<int>(newVertices[Faces[i][j]].y);
-            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].x);
-            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % Faces[i].size()]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].y);
             canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
         }
     }
@@ -180,7 +183,8 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
         return;
     
 
-    rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
+    //rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
+    //rnadColorPen->Color = color;
 
     if (c2.y > c3.y)
     {
@@ -227,23 +231,63 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
     pictureBox1->Image = bmp;
 }
 
-System::Void simple3dviewerproject::MainForm::drawPolygons()
+System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Vertices)
 {
-    canvas->Clear(Color::White);
+    Matrix mt(4, 4);
 
-    std::vector<Coord> newVertices (NumberOfVertices);
+    mt(0, 0) = 1;
+    mt(1, 1) = 1;
+    mt(2, 3) = 1 / 3;
+    mt(3, 3) = 1;
 
     for (unsigned int i = 0; i < NumberOfVertices; i++)
     {
-        newVertices[i] = changeCoordinates(Vertices[i]);
+        Vertices[i] = mt.mult4x(Vertices[i]);
+        Vertices[i].x = Vertices[i].x / Vertices[i].d;
+        Vertices[i].y = Vertices[i].y / Vertices[i].d;
     }
 
+    canvas->Clear(Color::Black);
+
+    //std::vector<Coord> newVertices (NumberOfVertices);
+
+    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
+    {
+        newVertices[i] = changeCoordinates(Vertices[i]);
+    }*/
+
+    //for (unsigned int i = 0; i < NumberIfFaces; i++)
+    //{
+    //    rnadColorPen->Color = Color::FromArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
+    //    //color = color.ToArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
+    //    filledTriangle(newVertices[Faces[i][0]], newVertices[Faces[i][1]], newVertices[Faces[i][2]]);
+    //}
+
+    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    {
+        Vertices[i] = changeCoordinates(Vertices[i]);
+    }
+
+    Coord c, v1, v2;
+    int intenc;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        filledTriangle(newVertices[Faces[i][0]], newVertices[Faces[i][1]], newVertices[Faces[i][2]]);
+        v1 = Vertices[Faces[i][1]] - Vertices[Faces[i][0]];
+        /*c.x = Vertices[Faces[i][0]].y * Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z * Vertices[Faces[i][1]].y;
+        c.y = Vertices[Faces[i][0]].x * Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z * Vertices[Faces[i][1]].x;*/
+        c.z = Vertices[Faces[i][0]].x * Vertices[Faces[i][1]].y - Vertices[Faces[i][0]].y * Vertices[Faces[i][1]].x;
+        intenc = c.z * 0.001;
+        if (intenc > 255)
+            intenc = 255;
+        if (intenc > 0)
+        {
+            rnadColorPen->Color = Color::FromArgb(intenc, intenc, intenc);
+            filledTriangle(Vertices[Faces[i][0]], Vertices[Faces[i][1]], Vertices[Faces[i][2]]);
+        }
+        //rnadColorPen->Color = Color::FromArgb(255 - Faces[i][3], 255 - Faces[i][4], 255 - Faces[i][5]);
+        //color = color.ToArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
     }
 
-    //drawEdging();
     pictureBox1->Image = bmp;
     return System::Void();
 }
@@ -292,6 +336,40 @@ void simple3dviewerproject::MainForm::rotateY(std::vector<Coord>& vec, double a)
     }    
 }
 
+void simple3dviewerproject::MainForm::rotateX(std::vector<Coord>& vec, double a)
+{
+    a = a * 3.14 / 180;
+
+    Matrix mt(3, 3);
+    mt(0, 0) = 1;
+    mt(1, 1) = cos(a);
+    mt(1, 2) = -sin(a);
+    mt(2, 1) = sin(a);
+    mt(2, 2) = cos(a);
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult3x(vec[i]);
+    }
+}
+
+void simple3dviewerproject::MainForm::rotateZ(std::vector<Coord>& vec, double a)
+{
+    a = a * 3.14 / 180;
+
+    Matrix mt(3, 3);
+    mt(0, 0) = cos(a);
+    mt(0, 1) = -sin(a);
+    mt(1, 0) = sin(a);
+    mt(1, 1) = cos(a);
+    mt(2, 2) = 1;
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult3x(vec[i]);
+    }
+}
+
 void simple3dviewerproject::MainForm::viewFromAbove(std::vector<Coord> vec)
 {
     for (unsigned int i = 0; i < vec.size(); i++)
@@ -323,7 +401,7 @@ void simple3dviewerproject::MainForm::isometry(std::vector<Coord> vec)
     mt(0, 1) = sin(f) * sin(p);
     mt(1, 1) = cos(f);
     mt(2, 0) = sin(p);
-    mt(2, 1) = sin(f) * cos(p);
+    mt(2, 1) = -sin(f) * cos(p);
     mt(3, 3) = 1;
 
     for (unsigned int i = 0; i < vec.size(); i++)
@@ -344,7 +422,7 @@ void simple3dviewerproject::MainForm::dimetry(std::vector<Coord> vec)
     mt(0, 1) = sin(f) * sin(p);
     mt(1, 1) = cos(f);
     mt(2, 0) = sin(p);
-    mt(2, 1) = sin(f) * cos(p);
+    mt(2, 1) = -sin(f) * cos(p);
     mt(3, 3) = 1;
 
     for (unsigned int i = 0; i < vec.size(); i++)
@@ -365,7 +443,7 @@ void simple3dviewerproject::MainForm::trimetry(std::vector<Coord> vec)
     mt(0, 1) = sin(f) * sin(p);
     mt(1, 1) = cos(f);
     mt(2, 0) = sin(p);
-    mt(2, 1) = sin(f) * cos(p);
+    mt(2, 1) = -sin(f) * cos(p);
     mt(3, 3) = 1;
 
     for (unsigned int i = 0; i < vec.size(); i++)
@@ -400,19 +478,19 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
     switch (e->KeyChar)
     {
     case 's':
-        offsetCoordinates(Vertices, 0, 0.1, 0);
-        drawEdging();
-        break;
-    case 'w':
         offsetCoordinates(Vertices, 0, -0.1, 0);
         drawEdging();
         break;
+    case 'w':
+        offsetCoordinates(Vertices, 0, 0.1, 0);
+        drawEdging();
+        break;
     case 'd':
-        offsetCoordinates(Vertices, 0.1, 0, 0);
+        offsetCoordinates(Vertices, -0.1, 0, 0);
         drawEdging();
         break;
     case 'a':
-        offsetCoordinates(Vertices, -0.1, 0, 0);
+        offsetCoordinates(Vertices, 0.1, 0, 0);
         drawEdging();
         break;
     case 'q':
@@ -431,6 +509,14 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
         break;
     case '1':
         rotateY(Vertices, 10);
+        drawEdging();
+        break;
+    case '2':
+        rotateX(Vertices, 10);
+        drawEdging();
+        break;
+    case '3':
+        rotateZ(Vertices, 10);
         drawEdging();
         break;
     case 'z':
@@ -454,6 +540,9 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
     case 'o':
         singlePointProjection(Vertices, 3);
         break;
+    case 'i':
+        drawPolygons(Vertices);
+        break;
     default:
         e->Handled;
         break;
@@ -465,13 +554,14 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
 System::Void simple3dviewerproject::MainForm::timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 {
     rotateY(Vertices, 5);
-    drawPolygons();
+    drawPolygons(Vertices);
     return System::Void();
 }
 
 System::Void simple3dviewerproject::MainForm::timer2_Tick(System::Object^ sender, System::EventArgs^ e)
 {
     rotateY(Vertices, 5);
+    rotateZ(Vertices, 5);
     singlePointProjection(Vertices, 3);
     return System::Void();
 }
