@@ -49,7 +49,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("anime_charcter.off", ios_base::in);
+    file.open("handv2.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -79,7 +79,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
         for (unsigned int i = 0; i < NumberIfFaces; i++)
         {
             file >> colSize;
-            colSize += 3;
+            //colSize += 3;
             Faces[i].resize(colSize);
             for (int j = 0; j < colSize; j++)
             {
@@ -132,12 +132,12 @@ System::Void simple3dviewerproject::MainForm::drawEdging()
     int j;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        for (j = 0; j < Faces[i].size() - 3; j++)
+        for (j = 0; j < Faces[i].size(); j++)
         {
             x1 = static_cast<int>(newVertices[Faces[i][j]].x);
             y1 = static_cast<int>(newVertices[Faces[i][j]].y);
-            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].x);
-            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size())]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size())]].y);
             canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
         }
     }
@@ -162,12 +162,12 @@ System::Void simple3dviewerproject::MainForm::drawEdging(std::vector<Coord>& vec
     int j;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        for (j = 0; j < Faces[i].size()-3; j++)
+        for (j = 0; j < Faces[i].size(); j++)
         {
             x1 = static_cast<int>(newVertices[Faces[i][j]].x);
             y1 = static_cast<int>(newVertices[Faces[i][j]].y);
-            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].x);
-            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size() - 3)]].y);
+            x2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size())]].x);
+            y2 = static_cast<int>(newVertices[Faces[i][(j + 1) % (Faces[i].size())]].y);
             canvas->DrawLine(blackSolidThinPen, x1, y1, x2, y2);
         }
     }
@@ -179,8 +179,9 @@ System::Void simple3dviewerproject::MainForm::drawEdging(std::vector<Coord>& vec
 
 void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3)
 {
-    if (c1.y == c2.y || c2.y == c3.y || c1.y == c3.y)
-        return;
+    c1 = changeCoordinates(c1);
+    c2 = changeCoordinates(c2);
+    c3 = changeCoordinates(c3);
     
 
     //rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
@@ -202,8 +203,9 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
         std::swap(c3.x, c2.x);
     }
 
-    double dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
-    double dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+    double dx1, dx2;
+    c2.y == c1.y ? dx1 = 0 : dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
+    c3.y == c1.y ? dx2 = 0 : dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
 
     double lx, rx;
     lx = c1.x;
@@ -216,8 +218,8 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
         rx += dx2;
     }
 
-    dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
-    dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
+    c3.y == c1.y ? dx1 = 0 : dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
+    c3.y == c2.y ? dx2 = 0 : dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
     lx = c3.x;
     rx = c3.x;
 
@@ -233,19 +235,19 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
 
 System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Vertices)
 {
-    Matrix mt(4, 4);
+    /*Matrix mt(4, 4);
 
     mt(0, 0) = 1;
     mt(1, 1) = 1;
     mt(2, 3) = 1 / 3;
-    mt(3, 3) = 1;
+    mt(3, 3) = 1;*/
 
-    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
     {
         Vertices[i] = mt.mult4x(Vertices[i]);
         Vertices[i].x = Vertices[i].x / Vertices[i].d;
         Vertices[i].y = Vertices[i].y / Vertices[i].d;
-    }
+    }*/
 
     canvas->Clear(Color::Black);
 
@@ -263,20 +265,38 @@ System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Ve
     //    filledTriangle(newVertices[Faces[i][0]], newVertices[Faces[i][1]], newVertices[Faces[i][2]]);
     //}
 
-    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
     {
         Vertices[i] = changeCoordinates(Vertices[i]);
-    }
+    }*/
 
     Coord c, v1, v2;
-    int intenc;
+    double intenc;
+    double l;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        v1 = Vertices[Faces[i][1]] - Vertices[Faces[i][0]];
-        /*c.x = Vertices[Faces[i][0]].y * Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z * Vertices[Faces[i][1]].y;
-        c.y = Vertices[Faces[i][0]].x * Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z * Vertices[Faces[i][1]].x;*/
-        c.z = Vertices[Faces[i][0]].x * Vertices[Faces[i][1]].y - Vertices[Faces[i][0]].y * Vertices[Faces[i][1]].x;
-        intenc = c.z * 0.001;
+        v1.x = Vertices[Faces[i][1]].x - Vertices[Faces[i][0]].x;
+        v1.y = Vertices[Faces[i][1]].y - Vertices[Faces[i][0]].y;
+        v1.z = Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z;
+
+        v2.x = Vertices[Faces[i][2]].x - Vertices[Faces[i][0]].x;
+        v2.y = Vertices[Faces[i][2]].y - Vertices[Faces[i][0]].y;
+        v2.z = Vertices[Faces[i][2]].z - Vertices[Faces[i][0]].z;
+
+        //векторное произведение
+        c.x = v1.y * v2.z - v1.z * v2.y;
+        c.y = v1.z * v2.x - v1.x * v2.z;
+        c.z = v1.x * v2.y - v1.y * v2.x;
+
+        l = sqrt(c.x * c.x + c.y * c.y + c.z * c.z);
+
+        c.x = c.x / l;
+        c.y = c.y / l;
+        c.z = c.z / l;
+        
+        //скалярное произведение
+        intenc = -1 * c.z;
+        intenc *= 255;
         if (intenc > 255)
             intenc = 255;
         if (intenc > 0)
