@@ -49,7 +49,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("handv2.off", ios_base::in);
+    file.open("skull.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -85,7 +85,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
             {
                 file >> Faces[i][j];
             }
-            //file >> x >> x >> x;
+            file >> x >> x >> x;
         }
     }
     else
@@ -235,21 +235,24 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
 
 System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Vertices)
 {
-    /*Matrix mt(4, 4);
+    Matrix mt(4, 4);
 
-    mt(0, 0) = 1;
+    /*mt(0, 0) = 1;
     mt(1, 1) = 1;
     mt(2, 3) = 1 / 3;
-    mt(3, 3) = 1;*/
+    mt(3, 3) = 1;
 
-    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
+    double z;
+    for (unsigned int i = 0; i < NumberOfVertices; i++)
     {
+        z = Vertices[i].z;
         Vertices[i] = mt.mult4x(Vertices[i]);
         Vertices[i].x = Vertices[i].x / Vertices[i].d;
         Vertices[i].y = Vertices[i].y / Vertices[i].d;
+        Vertices[i].z = z;
     }*/
 
-    canvas->Clear(Color::Black);
+    canvas->Clear(Color::PapayaWhip);
 
     //std::vector<Coord> newVertices (NumberOfVertices);
 
@@ -295,7 +298,7 @@ System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Ve
         c.z = c.z / l;
         
         //скалярное произведение
-        intenc = -1 * c.z;
+        intenc = -0.8 * c.z + 0.3 * c.x;
         intenc *= 255;
         if (intenc > 255)
             intenc = 255;
