@@ -49,7 +49,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("skull.off", ios_base::in);
+    file.open("anime_charcter.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -298,13 +298,13 @@ System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Ve
         c.z = c.z / l;
         
         //скалярное произведение
-        intenc = -0.8 * c.z + 0.3 * c.x;
-        intenc *= 255;
+        intenc = -0.8 * c.z;
+        //intenc *= 255;
         if (intenc > 255)
             intenc = 255;
         if (intenc > 0)
         {
-            rnadColorPen->Color = Color::FromArgb(intenc, intenc, intenc);
+            rnadColorPen->Color = Color::FromArgb(255, intenc * 255, intenc * 255);
             filledTriangle(Vertices[Faces[i][0]], Vertices[Faces[i][1]], Vertices[Faces[i][2]]);
         }
         //rnadColorPen->Color = Color::FromArgb(255 - Faces[i][3], 255 - Faces[i][4], 255 - Faces[i][5]);
@@ -391,6 +391,22 @@ void simple3dviewerproject::MainForm::rotateZ(std::vector<Coord>& vec, double a)
     {
         vec[i] = mt.mult3x(vec[i]);
     }
+}
+
+System::Void simple3dviewerproject::MainForm::reflection(std::vector<Coord> vec)
+{
+    Matrix mt(3, 3);
+    mt(0, 0) = -1;
+    mt(1, 1) = 1;
+    mt(2, 2) = 1;
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+    {
+        vec[i] = mt.mult3x(vec[i]);
+    }
+
+    drawEdging(vec);
+    return System::Void();
 }
 
 void simple3dviewerproject::MainForm::viewFromAbove(std::vector<Coord> vec)
@@ -565,6 +581,9 @@ System::Void simple3dviewerproject::MainForm::MainForm_KeyPress(System::Object^ 
         break;
     case 'i':
         drawPolygons(Vertices);
+        break;
+    case 'u':
+        reflection(Vertices);
         break;
     default:
         e->Handled;

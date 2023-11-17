@@ -131,6 +131,7 @@ namespace simple3dviewerproject {
 	private: void rotateY(std::vector<Coord>& vec, double a);
 	private: void rotateX(std::vector<Coord>& vec, double a);
 	private: void rotateZ(std::vector<Coord>& vec, double a);
+	private: System::Void reflection(std::vector<Coord> vec);
 	private: void filledTriangle(Coord c1, Coord c2, Coord c3);
 	private: void viewFromAbove(std::vector<Coord> vec);
 	private: void sideView(std::vector<Coord> vec);
