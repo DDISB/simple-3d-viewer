@@ -49,7 +49,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("anime_charcter.off", ios_base::in);
+    file.open("skull.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -108,7 +108,7 @@ Coord simple3dviewerproject::MainForm::changeCoordinates(const Coord& OriginalCo
 
     coord.x = -round(halfHeight * OriginalCoord.x) + halfWidth;
     coord.y = -round(halfHeight * OriginalCoord.y) + halfHeight;
-    coord.z = round(100 * OriginalCoord.z);
+    coord.z = -OriginalCoord.z;
 
     return coord;
 }
@@ -177,16 +177,14 @@ System::Void simple3dviewerproject::MainForm::drawEdging(std::vector<Coord>& vec
     return System::Void();
 }
 
-void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3)
+void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c3, std::vector<std::vector <double>>& zbuffer)
 {
+    //перевод в экарнки 
     c1 = changeCoordinates(c1);
     c2 = changeCoordinates(c2);
     c3 = changeCoordinates(c3);
-    
 
-    //rnadColorPen->Color = Color::FromArgb(rand() % 255, rand() % 255, rand() & 255);
-    //rnadColorPen->Color = color;
-
+    //сортирвока по высотам
     if (c2.y > c3.y)
     {
         std::swap(c3.y, c2.y);
@@ -203,88 +201,155 @@ void simple3dviewerproject::MainForm::filledTriangle(Coord c1, Coord c2, Coord c
         std::swap(c3.x, c2.x);
     }
 
-    double dx1, dx2;
-    c2.y == c1.y ? dx1 = 0 : dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
-    c3.y == c1.y ? dx2 = 0 : dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+    //расчет коэффов
+    double dx1, dx2, dz1, dz2;
+    if (c2.y == c1.y)
+    {
+        dx1 = 0;
+        dz1 = 0;
+    }
+    else
+    {
+        dx1 = (-(c1.x - c2.x) / (c2.y - c1.y));
+        dz1 = (-(c1.z - c2.z) / (c2.y - c1.y));
+    }
+    if (c3.y == c1.y)
+    {
+        dx2 = 0;
+        dz2 = 0;
+    }
+    else
+    {
+        dx2 = (-(c1.x - c3.x) / (c3.y - c1.y));
+        dz2 = (-(c1.z - c3.z) / (c3.y - c1.y));
+    }
 
-    double lx, rx;
+    double lx, rx, lz, rz;
     lx = c1.x;
     rx = c1.x;
+    lz = c1.z;
+    rz = c1.z;
 
     for (int i = c1.y; i <= c2.y; i++)
     {
-        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        //canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        line(lx, lz, rx, rz, i, zbuffer);
         lx += dx1;
         rx += dx2;
+        lz += dz1;
+        rz += dz2;
     }
 
-    c3.y == c1.y ? dx1 = 0 : dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
-    c3.y == c2.y ? dx2 = 0 : dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
+    if (c3.y == c1.y)
+    {
+        dx1 = 0;
+        dz1 = 0;
+    }
+    else
+    {
+        dx1 = (-(c3.x - c1.x) / (c3.y - c1.y));
+        dz1 = (-(c3.z - c1.z) / (c3.y - c1.y));
+    }
+    if (c3.y == c2.y)
+    {
+        dx2 = 0;
+        dz2 = 0;
+    }
+    else
+    {
+        dx2 = (-(c3.x - c2.x) / (c3.y - c2.y));
+        dz2 = (-(c3.z - c2.z) / (c3.y - c2.y));
+    }
+
     lx = c3.x;
     rx = c3.x;
+    lz = c3.z;
+    rz = c3.z;
 
     for (int i = c3.y; i > c2.y; i--)
     {
+        line(lx, lz, rx, rz, i, zbuffer);
         lx += dx1;
         rx += dx2;
-        canvas->DrawLine(rnadColorPen, rx, i, lx, i);
+        lz += dz1;
+        rz += dz2;
+        //canvas->DrawLine(rnadColorPen, rx, i, lx, i);
     }
 
     pictureBox1->Image = bmp;
 }
 
-System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Vertices)
+void simple3dviewerproject::MainForm::line(int x1, double z1, int x2, double z2, const int& y, std::vector<std::vector<double>>& zbuffer)
 {
+    if ((x1 < 0 || x1 >= width) || (x2 < 0 || x2 >= width) || (y < 0 || y >= height))
+    {
+        return ;
+    }
+    if (x1 > x2)
+    {
+        std::swap(x1, x2);
+        std::swap(z1, z2);
+    }
+    double dz;
+    x1 != x2 ? dz = -(z1 - z2) / (x1 - x2) : dz = 0;
+    double z = z1;
+
+    for (int i = x1; i <= x2; i++)
+    {
+        if (z > zbuffer[i][y])
+        {
+            zbuffer[i][y] = z;
+            bmp->SetPixel(i, y, color);
+        }
+        z += dz;
+    }
+}
+
+System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> vec)
+{
+    canvas->Clear(Color::PapayaWhip);
+
+    //инициализация zbuffer и заполнение его минимальными числами
+    std::vector<std::vector <double>> zbuffer(width, std::vector<double>(height));
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            zbuffer[i][j] = -DBL_MAX;
+        }
+    }
+
+    //переводим коорды в одноточечную проекцию
     Matrix mt(4, 4);
 
-    /*mt(0, 0) = 1;
+    mt(0, 0) = 1;
     mt(1, 1) = 1;
-    mt(2, 3) = 1 / 3;
+    mt(2, 3) = 1 / 3.;
     mt(3, 3) = 1;
 
     double z;
-    for (unsigned int i = 0; i < NumberOfVertices; i++)
+    for (unsigned int i = 0; i < vec.size(); i++)
     {
-        z = Vertices[i].z;
-        Vertices[i] = mt.mult4x(Vertices[i]);
-        Vertices[i].x = Vertices[i].x / Vertices[i].d;
-        Vertices[i].y = Vertices[i].y / Vertices[i].d;
-        Vertices[i].z = z;
-    }*/
+        z = vec[i].z;
+        vec[i] = mt.mult4x(vec[i]);
+        vec[i].x = vec[i].x / vec[i].d;
+        vec[i].y = vec[i].y / vec[i].d;
+        vec[i].z = z;
+    }
 
-    canvas->Clear(Color::PapayaWhip);
-
-    //std::vector<Coord> newVertices (NumberOfVertices);
-
-    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
-    {
-        newVertices[i] = changeCoordinates(Vertices[i]);
-    }*/
-
-    //for (unsigned int i = 0; i < NumberIfFaces; i++)
-    //{
-    //    rnadColorPen->Color = Color::FromArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
-    //    //color = color.ToArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
-    //    filledTriangle(newVertices[Faces[i][0]], newVertices[Faces[i][1]], newVertices[Faces[i][2]]);
-    //}
-
-    /*for (unsigned int i = 0; i < NumberOfVertices; i++)
-    {
-        Vertices[i] = changeCoordinates(Vertices[i]);
-    }*/
 
     Coord c, v1, v2;
     double intenc;
     double l;
     for (unsigned int i = 0; i < NumberIfFaces; i++)
     {
-        v1.x = Vertices[Faces[i][1]].x - Vertices[Faces[i][0]].x;
-        v1.y = Vertices[Faces[i][1]].y - Vertices[Faces[i][0]].y;
-        v1.z = Vertices[Faces[i][1]].z - Vertices[Faces[i][0]].z;
+        v1.x = vec[Faces[i][1]].x - vec[Faces[i][0]].x;
+        v1.y = vec[Faces[i][1]].y - vec[Faces[i][0]].y;
+        v1.z = vec[Faces[i][1]].z - vec[Faces[i][0]].z;
 
-        v2.x = Vertices[Faces[i][2]].x - Vertices[Faces[i][0]].x;
-        v2.y = Vertices[Faces[i][2]].y - Vertices[Faces[i][0]].y;
-        v2.z = Vertices[Faces[i][2]].z - Vertices[Faces[i][0]].z;
+        v2.x = vec[Faces[i][2]].x - vec[Faces[i][0]].x;
+        v2.y = vec[Faces[i][2]].y - vec[Faces[i][0]].y;
+        v2.z = vec[Faces[i][2]].z - vec[Faces[i][0]].z;
 
         //векторное произведение
         c.x = v1.y * v2.z - v1.z * v2.y;
@@ -296,19 +361,16 @@ System::Void simple3dviewerproject::MainForm::drawPolygons(std::vector<Coord> Ve
         c.x = c.x / l;
         c.y = c.y / l;
         c.z = c.z / l;
-        
+
         //скалярное произведение
         intenc = -0.8 * c.z;
-        //intenc *= 255;
-        if (intenc > 255)
-            intenc = 255;
-        if (intenc > 0)
+        intenc *= 255;
+        if (intenc > 0.)
         {
-            rnadColorPen->Color = Color::FromArgb(255, intenc * 255, intenc * 255);
-            filledTriangle(Vertices[Faces[i][0]], Vertices[Faces[i][1]], Vertices[Faces[i][2]]);
+            //rnadColorPen->Color = Color::FromArgb(255, intenc * 255, intenc * 255);
+            color = Color::FromArgb(intenc, intenc, intenc);
+            filledTriangle(vec[Faces[i][0]], vec[Faces[i][1]], vec[Faces[i][2]], zbuffer);
         }
-        //rnadColorPen->Color = Color::FromArgb(255 - Faces[i][3], 255 - Faces[i][4], 255 - Faces[i][5]);
-        //color = color.ToArgb(Faces[i][3], Faces[i][4], Faces[i][5]);
     }
 
     pictureBox1->Image = bmp;

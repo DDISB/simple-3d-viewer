@@ -6,6 +6,7 @@
 #include "coord.h"
 #include "MainForm.h"
 #include "Matrix.h"
+#include <float.h>
 
 namespace simple3dviewerproject {
 
@@ -46,6 +47,7 @@ namespace simple3dviewerproject {
 
 	private: System::Windows::Forms::Timer^ timer1;
 	private: System::Windows::Forms::Timer^ timer2;
+
 	private: System::ComponentModel::IContainer^ components;
 	protected:
 
@@ -76,8 +78,9 @@ namespace simple3dviewerproject {
 			this->pictureBox1->BackColor = System::Drawing::Color::White;
 			this->pictureBox1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
+			this->pictureBox1->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
 			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(406, 284);
+			this->pictureBox1->Size = System::Drawing::Size(271, 185);
 			this->pictureBox1->TabIndex = 0;
 			this->pictureBox1->TabStop = false;
 			// 
@@ -93,11 +96,12 @@ namespace simple3dviewerproject {
 			// 
 			// MainForm
 			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
+			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(406, 284);
+			this->ClientSize = System::Drawing::Size(271, 185);
 			this->Controls->Add(this->pictureBox1);
 			this->KeyPreview = true;
+			this->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
 			this->Name = L"MainForm";
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
 			this->Text = L"MainForm";
@@ -115,9 +119,8 @@ namespace simple3dviewerproject {
 		Pen^ blackSolidThinPen;
 		Pen^ greenSolidThinPen;
 		Pen^ rnadColorPen;
-		//Color backgroundColor, color;
-		int width, height, halfWidth, halfHeight;
 		Color color;
+		int width, height, halfWidth, halfHeight;
 
 	private: System::Void MainForm_Load(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void MainForm_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e);
@@ -132,7 +135,8 @@ namespace simple3dviewerproject {
 	private: void rotateX(std::vector<Coord>& vec, double a);
 	private: void rotateZ(std::vector<Coord>& vec, double a);
 	private: System::Void reflection(std::vector<Coord> vec);
-	private: void filledTriangle(Coord c1, Coord c2, Coord c3);
+	private: void filledTriangle(Coord c1, Coord c2, Coord c3, std::vector<std::vector <double>>& zbuffer);
+	private: void line(int x1, double z1, int x2, double z2, const int& y, std::vector<std::vector<double>>& zbuffer);
 	private: void viewFromAbove(std::vector<Coord> vec);
 	private: void sideView(std::vector<Coord> vec);
 	private: void isometry(std::vector<Coord> vec);
