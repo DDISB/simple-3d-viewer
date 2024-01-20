@@ -49,7 +49,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
     using namespace std;
     ifstream file;
     //file.open("cube.off", ios_base::in);
-    file.open("skull.off", ios_base::in);
+    file.open("cubeq.off", ios_base::in);
 
     //Если открытие файла прошло успешно
     if (file.is_open())
@@ -85,7 +85,7 @@ System::Void simple3dviewerproject::MainForm::MainForm_Load(System::Object^ send
             {
                 file >> Faces[i][j];
             }
-            file >> x >> x >> x;
+            //file >> x >> x >> x;
         }
     }
     else
